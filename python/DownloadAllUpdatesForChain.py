@@ -86,7 +86,7 @@ def generate_downloads(cxy_api_key:str, scrape_update_list:list):
         # While Loop checks for status downloads for each step of the way and will pause for 5 seconds while it is downloading.
         while(fileGenerated == False):
             print("Checking for status of generated file, Download Id: " + str(scrape_download_id) + "...")
-            response = requests.get(url='https://location.chainxy.com/api/ChainListDownloads/{}'.format(scrape_download_id), headers=headers)
+            response = requests.get(url='https://location.chainxy.com/api/Downloads/{}'.format(scrape_download_id), headers=headers)
             r_body = json.loads(response.text)['Record']
 
             if r_body['Status'] == 0:

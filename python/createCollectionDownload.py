@@ -48,7 +48,7 @@ def download_collection(cxy_api_key:str, collection_id:int):
     
     while(fileGenerated == False):
         print("Checking for status of generated file " + str(collection_download_id) + "...")
-        response = requests.get(url='https://location.chainxy.com/api/ChainListDownloads/{}'.format(collection_download_id), headers=headers)
+        response = requests.get(url='https://location.chainxy.com/api/Downloads/{}'.format(collection_download_id), headers=headers)
         r_body = json.loads(response.text)['Record']
 
         if r_body['Status'] == 0:
