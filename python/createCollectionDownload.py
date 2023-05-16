@@ -200,7 +200,7 @@ def download_file(url:str, output_file:str):
 def main():
     # FILL THESE
     # your chainxy api key
-    cxy_api_key = '5215$obCAaduBtA4fhvN7tYoxvVJdETeKeKZuOuvZQQVa2WJYh8yteuBgHTO4kwmsd273cylW1ign2RpGkF5n8UdnJJLr6Kdbq4snHGZ4D4kWuZ5Hh3qedQHlKX6POFg8jDLJ'
+    cxy_api_key = ''
     # id of the collection to download
     collection_id = 234166
     # type of the collection to download ('chain' or 'center')
