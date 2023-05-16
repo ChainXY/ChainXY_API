@@ -202,7 +202,7 @@ def main():
     # your chainxy api key
     cxy_api_key = ''
     # id of the collection to download
-    collection_id = 234166
+    collection_id = 0
     # type of the collection to download ('chain' or 'center')
     collection_type = 'chain'
     # optional - the oldest a download can be (in hours) before creating a new download
