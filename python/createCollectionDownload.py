@@ -35,36 +35,6 @@ def validate_inputs(cxy_api_key:str, collection_type:str, cache_time:int):
     if cache_time < 0:
         raise ValueError("Please enter a valid duration for cache_time that is an int > 0.")
 
-def get_collection_urls(collection_id:str, collection_type:str):
-    """
-    Returns URLs and url params for requesting the ChainXY API for collection records based on collection_type.
-    """
-    records_url = check_url = new_download_url = ''
-
-    if collection_type == 'chain':
-        
-        records_url = f'https://location.chainxy.com/api/Downloads?fields=Id,ChainList,Label,User,ReportType,CreateDate,DataDate,Status,Format,Count,Link,DisplayValue,&Query=%7B%22ChainListId%22:{collection_id}%7D&OrderBy=-CreateDate'
-        check_url = f'https://location.chainxy.com/api/ChainLists/{collection_id}'
-        new_download_url = f"https://location.chainxy.com/api/ChainLists/Download/{collection_id}"
-
-        url_params = {
-            "format": "CSV",  # ZIP_CSV also works
-            "splitLayers": "false",
-            # "dataDate": "2019-10-03" # OPTIONAL
-        }
-
-    elif collection_type == 'center':
-        
-        records_url = f'https://location.chainxy.com/api/Downloads?fields=Id,SiteList,Label,User,ReportType,CreateDate,DataDate,Status,Format,Count,Link,DisplayValue,&Query=%7B%22SiteListId%22:{collection_id}%7D&OrderBy=-CreateDate'
-        check_url = f'https://location.chainxy.com/api/SiteLists/{collection_id}'
-        new_download_url =  f'https://location.chainxy.com/api/SiteLists/Download/{collection_id}'
-
-        url_params = {
-            "format": "ZIP_CSV"
-        }
-    
-    return records_url, check_url, new_download_url, url_params
-
 def is_download_stale(create_date, cache_time:int):
     """
     Returns true if a new download should be created. 
