@@ -13,7 +13,7 @@ def request_api(url:str, cxy_api_key:str, method='GET', params=None, data={}):
         'x-Application': 'Python API Call',
         'content-type': 'application/json'
         }
-    r = requests.request(url=url, method=method, headers=headers, params=params, data=data)
+    r = requests.request(url=url, method=method, headers=headers, json=params, data=data)
     if r.status_code == 401:
         raise ValueError("Bad ChainXY API key provided, please double-check the input value!")
     elif r.status_code != 200 and 'does not correspond to a collection' in r.text.lower():
@@ -97,7 +97,7 @@ def get_download_link(collection_download_id:int, cxy_api_key:str):
     
     return collection_download_link
 
-def download_collection(cxy_api_key:str, collection_id:int, collection_type:str, cache_time:int = 24):
+def download_collection(cxy_api_key:str, collection_id:int, collection_type:str, cache_time:int = 24, url_params:dict = {}):
     """
     Downloads a collection based on the provided collection ID and collection type. An optional input cache_time determines if a new download should be made.
     Params:
@@ -122,7 +122,7 @@ def download_collection(cxy_api_key:str, collection_id:int, collection_type:str,
         records_url = f'https://location.chainxy.com/api/Downloads?fields=Id,ChainList,Label,User,ReportType,CreateDate,DataDate,Status,Format,Count,Link,DisplayValue,&Query=%7B%22ChainListId%22:{collection_id}%7D&OrderBy=-CreateDate'
         check_url = f'https://location.chainxy.com/api/ChainLists/{collection_id}'
         new_download_url = f"https://location.chainxy.com/api/ChainLists/Download/{collection_id}"
-        url_params = {
+        default_url_params = {
             "format": "CSV",  # ZIP_CSV also works
             "splitLayers": "false",
             # "dataDate": "2019-10-03" # OPTIONAL
@@ -132,9 +132,10 @@ def download_collection(cxy_api_key:str, collection_id:int, collection_type:str,
         records_url = f'https://location.chainxy.com/api/Downloads?fields=Id,SiteList,Label,User,ReportType,CreateDate,DataDate,Status,Format,Count,Link,DisplayValue,&Query=%7B%22SiteListId%22:{collection_id}%7D&OrderBy=-CreateDate'
         check_url = f'https://location.chainxy.com/api/SiteLists/{collection_id}'
         new_download_url =  f'https://location.chainxy.com/api/SiteLists/Download/{collection_id}'
-        url_params = {
+        default_url_params = {
             "format": "ZIP_CSV"
         }
+    url_params = url_params if url_params else default_url_params
     
     records = json.loads(request_api(records_url, cxy_api_key).text)['Records']
 
@@ -196,8 +197,10 @@ def main():
     collection_type = 'chain'
     # optional - the oldest a download can be (in hours) before creating a new download
     cache_time = 24
+    #optional - overwrite default file output/export behavior; e.g., set "splitLayer":True if you want each chain to be in a separate CSV; set "DataDate":"2022-01-01" if you want to see the records as of Jan 1, 2022 (use YYYY-MM-DD format)
+    url_params = {} 
 
-    collection_download_url = download_collection(cxy_api_key, collection_id, collection_type, cache_time)
+    collection_download_url = download_collection(cxy_api_key, collection_id, collection_type, cache_time, url_params)
     
     # FILL THIS optional - if you want to download the file
     output_file = r""
