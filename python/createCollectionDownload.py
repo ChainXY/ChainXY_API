@@ -119,7 +119,7 @@ def download_collection(cxy_api_key:str, collection_id:int, collection_type:str,
     ## GET THE APPROPRIATE API REQUEST URLS FOR COLLECTION TYPE
     records_url = check_url = new_download_url = ''
     if collection_type == 'chain':
-        records_url = f'https://location.chainxy.com/api/Downloads?Query=%7B%22ChainListId%22:{collection_id},%22ReportType%22:[0],%22Status%22:[0,1],%22Format%22:[0,6]%7D&OrderBy=-CreateDate'
+        records_url = f'https://location.chainxy.com/api/Downloads?Query=%7B%22ChainListId%22:{collection_id},%22ReportType%22:[0],%22Status%22:[0,1]%7D&OrderBy=-CreateDate'
         check_url = f'https://location.chainxy.com/api/ChainLists/{collection_id}'
         new_download_url = f"https://location.chainxy.com/api/ChainLists/Download/{collection_id}"
         default_url_params = {
@@ -129,7 +129,7 @@ def download_collection(cxy_api_key:str, collection_id:int, collection_type:str,
         }
 
     elif collection_type == 'center':
-        records_url = f'https://location.chainxy.com/api/Downloads?Query=%7B%22SiteListId%22:{collection_id},%22ReportType%22:[4],%22Status%22:[0,1],%22Format%22:[0,6]%7D&OrderBy=-CreateDate'
+        records_url = f'https://location.chainxy.com/api/Downloads?Query=%7B%22SiteListId%22:{collection_id},%22ReportType%22:[4]%7D&OrderBy=-CreateDate'
         check_url = f'https://location.chainxy.com/api/SiteLists/{collection_id}'
         new_download_url =  f'https://location.chainxy.com/api/SiteLists/Download/{collection_id}'
         default_url_params = {
