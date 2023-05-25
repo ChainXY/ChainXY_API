@@ -54,8 +54,8 @@ Provide a skeleton for common API use cases.
 1. [createCollectionAndDownload.py](python/createCollectionAndDownload.py) - Using a provided list of Chain Ids, this will create a collection with a specified name and download the most recent set of locations for that collection.
     - input: list of Chain Ids, collection name
     - Output: ChainXY collection download (note that All Chain downloads are only available as csv files)
-2. [createCollectionDownload.py](python/createCollectionDownload.py) - Using a provided Collection Id, this will download the most recent set of locations for that collection
-    - Input: Collection Id
+2. [createCollectionDownload.py](python/createCollectionDownload.py) - Using a provided Collection Id and Collection Type, this will download that collection. If the optional cache_time is entered, it will check if a download that is not older than cache_time hours exists and will download that; otherwise, a new download will be generated.
+    - Input: Collection Id, Collection Type, Cache Time (optional)
     - Output: ChainXY collection download (note that All Chain downloads are only available as csv files)
 3. [generateReports.py](python/generateReports.py) - lets you generate reports and download them from the platform
     - Will allow you to generate Changes-Over-Time, Void Analysis, or Nearest reports.
