@@ -124,7 +124,7 @@ def download_collection(cxy_api_key:str, collection_id:int, collection_type:str,
         new_download_url = f"https://location.chainxy.com/api/ChainLists/Download/{collection_id}"
         default_url_params = {
             "format": "CSV",  # ZIP_CSV also works
-            "splitLayers": "false",
+            "splitLayers": False,
             # "dataDate": "2019-10-03" # OPTIONAL
         }
 
@@ -195,7 +195,7 @@ def main():
     collection_id = 0
     # type of the collection to download ('chain' or 'center')
     collection_type = 'chain'
-    # optional - the oldest a download can be (in hours) before creating a new download
+    # optional - the oldest a download to reuse (in hours) before creating a new download
     cache_time = 24
     #optional - overwrite default file output/export behavior; e.g., set "splitLayer":True if you want each chain to be in a separate CSV; set "DataDate":"2022-01-01" if you want to see the records as of Jan 1, 2022 (use YYYY-MM-DD format)
     url_params = {} 
