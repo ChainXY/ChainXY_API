@@ -13,7 +13,7 @@ All requests to ChainXY require an API token. You can generate a token on your u
 
 ## Using the API
 
-You can see all the available endpoints & methods using the [Swagger UI](https://location.chainxy.com/swagger/ui/index](https://location.chainxy.com/swagger/index.html) .
+You can see all the available endpoints & methods using the Swagger UI: https://location.chainxy.com/swagger/ui/index](https://location.chainxy.com/swagger/index.html .
 
 **URL**: `GET https://location.chainxy.com/api/[ResourceName]`
 
