@@ -13,9 +13,7 @@ def check_api_key(cxy_api_key):
         raise ValueError("Bad ChainXY API key provided, double-check the provided value!")
     
 
-def generate_collection(cxy_api_key:str, chain_ids:list, collection_label:str, comments:str = '', IncludeComingSoon:bool = True,\
-    IncludeClosed:bool = True, IncludeDistributors:bool = True, IncludeSubChains:bool = True, IncludeDeprecatedChains:bool = True,\
-    IncludeClosedChains:bool = True, IncludePOI:bool = True):
+def generate_collection(cxy_api_key:str, collection_params:dict = {}):
     """
     Generates a ChainXY collection based on the provided input parameters. This function does not download a generated collection.
     cxy_api_key:str - ChainXY API Key
@@ -37,30 +35,14 @@ def generate_collection(cxy_api_key:str, chain_ids:list, collection_label:str, c
             'x-Application': 'Python API Call',
             'content-type': 'application/json'}
 
-    formatted_chain_ids = []
-    for id in chain_ids:
-        formatted_chain_ids.append({"Id":id})
 
     apiUrl = "https://location.chainxy.com/api/ChainLists"
-    params = {
-        "Label": collection_label,
-        "Chains": formatted_chain_ids,
-        "AdminLevels": [],
-        "Comments": comments,
-        "IncludeComingSoon": IncludeComingSoon,
-        "IncludeClosed": IncludeClosed,
-        "IncludeDistributors": IncludeDistributors,
-        "IncludeSubChains": IncludeSubChains,
-        "IncludeDeprecatedChains": IncludeDeprecatedChains,
-        "IncludeClosedChains": IncludeClosedChains,
-        "IncludePOI": IncludePOI
-    }
     #i.e. include all chains
-    if not formatted_chain_ids:
-        params["ChainsQuery"] = "{}"
+    if not collection_params['Chains'] and not collection_params["ChainsQuery"]:
+        collection_params["ChainsQuery"] = "{}"
     
     print('STARTING...')
-    response = requests.post(url=apiUrl, data=json.dumps(params), headers=headers)
+    response = requests.post(url=apiUrl, data=json.dumps(collection_params), headers=headers)
     r_body = json.loads(response.text)
 
     created_collection_id = r_body['Id']
@@ -68,12 +50,14 @@ def generate_collection(cxy_api_key:str, chain_ids:list, collection_label:str, c
     print(f'Generated Collection ID: {created_collection_id}')
     return created_collection_id
 
-def download_collection(cxy_api_key:str, collection_id:int):
+def download_collection(cxy_api_key:str, collection_id:int, data_date:str = None, check_frequency:float=1):
     """
     Downloads a chainxy collection based on the provided collection ID.
     Params:
     cxy_api_key:str - ChainXY API Key
     collection_id:str - ID of the collection for which a new download will be initiated.
+    data_date:str - vintage of the data to be downloaded, e.g., if you want data corresponding to March 1, 2020 you would use "2020-03-01"
+    check_frequency:float - delay (in seconds) between successive checks of the status of the download, can be lowered for faster responses for small collections.
     """
     
     check_api_key(cxy_api_key)
@@ -84,14 +68,14 @@ def download_collection(cxy_api_key:str, collection_id:int):
             'content-type': 'application/json'}
 
     url_params = {
-        "format": "CSV",  # ZIP_CSV Also works
+        "format": "CSV",
         "splitLayers": "false",
-        # "dataDate": "2019-10-03" # OPTIONAL
     }
-    data = {}
+    if data_date:
+        url_params['dataDate'] = data_date
     api_download_url = "https://location.chainxy.com/api/ChainLists/Download/"
 
-    response = requests.post(url=api_download_url + str(collection_id), data=json.dumps(data), params=url_params, headers=headers)
+    response = requests.post(url=api_download_url + str(collection_id), params=url_params, headers=headers)
     r_body = json.loads(response.text)
 
     collection_download_id = r_body['Id']
@@ -108,7 +92,7 @@ def download_collection(cxy_api_key:str, collection_id:int):
 
         if r_body['Status'] == 0:
             print("Download " + str(collection_id) + " is still generating")
-            time.sleep(5)
+            time.sleep(check_frequency)
 
         elif r_body['Status'] == 2:
             print("File generation failed. Speak to ChainXY for assistance")
@@ -143,17 +127,34 @@ def main():
     # your chainxy api key
     cxy_api_key = ''
     
-    # proposed name of the collection
+    # name of the collection
     collection_label = ''
     # integers (comma separated), list of chain ids to create the collection from, leave empty for all chains
     chain_ids = []
-    # not mandatory: comments
+    # optional comments included in the collection description
     comments = ''
-    collection_id = generate_collection(cxy_api_key, chain_ids, collection_label)
-    collection_download_url = download_collection(cxy_api_key, collection_id)
+    #uncomment params to override default preferences of your account. You can update the defaults on your user page.
+    collection_params = {
+        "Label": collection_label,
+        "AdminLevels": [], #list of geographic filters formatted as [{"Id":20982}] -- see https://location.chainxy.com/AdminLevel for ids of individual countries/states etc.
+        "Comments": comments,
+        "Chains": [{"Id":id} for id in chain_ids], #comment out the key if you want to include all chains; alternatively use ChainsQuery key to define a filter. See usage based on API calls made through the UI.
+        #"IncludeComingSoon": True,
+        #"IncludeClosed": True,
+        #"IncludePast": False,
+        #"IncludeDistributors": True,
+        #"IncludeSubChains": True,
+        #"IncludeDeprecatedChains": True,
+        #"IncludeClosedChains": True,
+        #"IncludePOI": False
+    }
+    data_date = "" #date formated as YYYY-MM-DD for vintage of the data
+    check_frequency = 1 #how often the download status is checked, lower the value for smaller collections. smallest collections generate in <0.5 seconds.
+    collection_id = generate_collection(cxy_api_key, collection_params)
+    collection_download_url = download_collection(cxy_api_key, collection_id, data_date, check_frequency) # can pass the URL directly to pandas to read the csv
     
-    output_file = r""
-    download_file(collection_download_url, output_file)
+    #output_file = r""
+    #download_file(collection_download_url, output_file)
 
 
 if __name__ == '__main__':
