@@ -68,7 +68,7 @@ def create_new_download(new_download_url:str, cxy_api_key:str, params:str):
     else:
         return r_body['Id']
 
-def get_download_link(collection_download_id:int, cxy_api_key:str):
+def get_download_link(collection_download_id:int, cxy_api_key:str, check_frequency:float=1):
     """
     Checks and waits for a download to finish before returning the URL of the collection file.
     """
@@ -84,7 +84,7 @@ def get_download_link(collection_download_id:int, cxy_api_key:str):
 
         if r_body['Status'] == 0:
             print(f"Download {str(collection_download_id)} is still generating...")
-            time.sleep(5)
+            time.sleep(check_frequency)
 
         elif r_body['Status'] == 2:
             print("File generation failed. Please reach out to ChainXY support for assistance.")
@@ -97,7 +97,7 @@ def get_download_link(collection_download_id:int, cxy_api_key:str):
     
     return collection_download_link
 
-def download_collection(cxy_api_key:str, collection_id:int, collection_type:str, cache_time:int = 24, url_params:dict = {}):
+def download_collection(cxy_api_key:str, collection_id:int, collection_type:str, cache_time:int = 24, url_params:dict = {}, data_date:str="", check_frequency:float=1):
     """
     Downloads a collection based on the provided collection ID and collection type. An optional input cache_time determines if a new download should be made.
     Params:
@@ -105,6 +105,8 @@ def download_collection(cxy_api_key:str, collection_id:int, collection_type:str,
         collection_id:str - ID of the collection for which a new download will be initiated.
         collectiontype:str - 'chain' or 'center' collection
         cache_time:int - max. time in hours since the latest download before a new one is requested
+        data_date:str - vintage of the data to be downloaded, e.g., if you want data corresponding to March 1, 2020 you would use "2020-03-01"
+        check_frequency:float - delay (in seconds) between successive checks of the status of the download, can be lowered for faster responses for small collections.
     Returns:
         collection_download_link:str - link to S3 URL of the downloaded collection
     """
@@ -123,9 +125,8 @@ def download_collection(cxy_api_key:str, collection_id:int, collection_type:str,
         check_url = f'https://location.chainxy.com/api/ChainLists/{collection_id}'
         new_download_url = f"https://location.chainxy.com/api/ChainLists/Download/{collection_id}"
         default_url_params = {
-            "format": "CSV",  # ZIP_CSV also works
+            "format": "CSV",
             "splitLayers": False,
-            # "dataDate": "2019-10-03" # OPTIONAL
         }
 
     elif collection_type == 'center':
@@ -136,7 +137,9 @@ def download_collection(cxy_api_key:str, collection_id:int, collection_type:str,
             "format": "ZIP_CSV"
         }
     url_params = url_params if url_params else default_url_params
-    
+
+    if data_date:
+        url_params['dataDate'] = data_date
     records = json.loads(request_api(records_url, cxy_api_key).text)['Records']
 
     # IF A DOWNLOAD RECORD DOES NOT EXIST, CHECK IF THE COLLECTION EXISTS WITH 0 DOWNLOADS AND CREATE ITS FIRST DOWNLOAD;
@@ -145,20 +148,20 @@ def download_collection(cxy_api_key:str, collection_id:int, collection_type:str,
         if check_record_exists(check_url, cxy_api_key): 
             print(f"A record of collection {collection_id} exists with 0 downloads. Starting a new download...")
             collection_download_id = create_new_download(new_download_url, cxy_api_key, url_params)
-            collection_download_link = get_download_link(collection_download_id, cxy_api_key)
+            collection_download_link = get_download_link(collection_download_id, cxy_api_key, check_frequency)
     else:
         create_date = records[0]['CreateDate']
         if is_download_stale(create_date, cache_time):
             print(f"It has been longer than {cache_time} hour(s) since the latest download of this collection. Starting new download...")
             collection_download_id = create_new_download(new_download_url, cxy_api_key, url_params)
-            collection_download_link = get_download_link(collection_download_id, cxy_api_key)
+            collection_download_link = get_download_link(collection_download_id, cxy_api_key, check_frequency)
         else:
             print(f"A download created within the last {cache_time} hour(s) exists. Retrieving record...")
             if records[0]['Status'] == 1: ## records are ordered by -CreateDate, so the first should be the latest
                 collection_download_link = records[0]['Link']
             else: ## if the existing record is still pending, wait for it to finish
                 print(f"The latest download (Id: {records[0]['Id']}) is still pending...") 
-                collection_download_link = get_download_link(records[0]['Id'], cxy_api_key)
+                collection_download_link = get_download_link(records[0]['Id'], cxy_api_key, check_frequency)
     
     print('----------------------------------------------------------------')
     print('COLLECTION DOWNLOAD URL:')
@@ -200,7 +203,7 @@ def main():
     #optional - overwrite default file output/export behavior; e.g., set "splitLayer":True if you want each chain to be in a separate CSV; set "DataDate":"2022-01-01" if you want to see the records as of Jan 1, 2022 (use YYYY-MM-DD format)
     url_params = {} 
 
-    collection_download_url = download_collection(cxy_api_key, collection_id, collection_type, cache_time, url_params)
+    collection_download_url = download_collection(cxy_api_key, collection_id, collection_type, cache_time, url_params, check_frequency=1)
     
     # FILL THIS optional - if you want to download the file
     output_file = r""
