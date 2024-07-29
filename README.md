@@ -28,7 +28,7 @@ You can see all the available endpoints & methods using the [Swagger UI](https:/
             - *plain number*: returns records matching the number exactly (e.g. useful for searching the `Id` column)
             - *less than / greater than search*: searches numerical or datetime values prefixed with `>` or `<`, e.g. `"<4"` or `">11/1/2017"`
             - *interval search*: searches numerical or datetime values within an interval, e.g. `"[4,7]"` or `"[11/1/2017,12/1/2017]"`
-            - an array of any of the above, to return records matching any of the elements in the array (`or` query
+            - an array of any of the above, to return records matching any of the elements in the array (`or` query)
 - `Fields`: a comma-separated list of field names to include in the response (e.g. `Id,Name,Status,LocationCount,LastScrapeDate`), this applies only to the main resource being requested, not any related entities that might be included in the response.
 - `Limit=[Limit]`: limit the number of records returned, defaults to `100`
 - `Page=[Page]`: specify the page to be returned, defaults to `0`
@@ -47,9 +47,28 @@ Based on the response from the call above, we can see that for Walmart USA its `
 
 - Note that the bounding box parameters (North, East, South, West) are required for the `api/Locations` endpoint.
 
-## Samples Provided
+**Mixing filters**
 
-Provide a skeleton for common API use cases.
+Multiple conditions can be mixed to get results matching at least one (logical `or`) of the filters. 
+
+Combining using a logical "OR" operator:
+`https://location.chainxy.com/api/Chains?Query=[{"PrimaryCategory/Id":180},  {"Id":[4322,1782]},  {"Name":"Steakhouse"}]`
+- `{"PrimaryCategory/Id":180}` matches any brand where Primary Category is Restaurant - QSR/Fast Food
+- `{"Id":[4322,1782]}` matches Shake Shack and Firehouse Subs based on their Chain Id
+- `{"Name":"Steakhouse"}` matches any chain containing "steakhouse" in the name (case insensitive)
+
+Combining using a logical "AND" operator:
+`https://location.chainxy.com/api/Chains?Query={"Name":"Steakhouse", "PrimaryCategory/Name":"Restaurant - Fine Dining"}`
+- `"Name":"Steakhouse"` matches any chain where name contains steakhouse (case insensitive)
+- `"PrimaryCategory/Name":"Restaurant - Fine Dining"` filters this set down only to the restaurants where primary category is Fine Dining. Note that this example is provided for reference, it is not recommended to query the API based on entity names (e.g., category name), use a unique Id instead.
+
+## Best practices
+- The system is optimized for bulk exports. If you plan to export whole categories or the entire library, running reports the broadest set of data will produce the fastest result. Avoid running reports on individual chains if your goal is to pull entire categories. The API provides flexible filtering for any specific set of data. 
+- Any filter that can be applied to `api/Chains` is a valid collection filter, that can be applied to bulk exports (see Mixing filters section above).
+- If you want to request historical data, instead of iterating over historical updates, set "IncludePast" flag to true when generating a Locations report. You can then use the FirstAppeared and LastSeen columns to understand a brand's evolution over time.
+- For additional reporting background, data dictionaries and guides visit the [Support](https://location.chainxy.com/Support) page. If you have any questions, do not hesitate to reach out to support@chainxy.com
+
+## Samples Provided
 
 1. [createCollectionAndDownload.py](python/createCollectionAndDownload.py) - Using a provided list of Chain Ids, this will create a collection with a specified name and download the most recent set of locations for that collection.
     - input: list of Chain Ids, collection name
