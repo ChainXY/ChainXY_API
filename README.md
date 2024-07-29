@@ -1,6 +1,6 @@
 # ChainXY API Guide
 
-Provides an overview of using the ChainXY REST API.
+Provides an overview of using the ChainXY REST API & ChainXY Reporting System for bulk data exports/reporting.
 
 ## Authentication
 
@@ -64,14 +64,14 @@ Combining using a logical "AND" operator:
 
 ## Best practices
 - The system is optimized for bulk exports. If you plan to export whole categories or the entire library, running reports the broadest set of data will produce the fastest result. Avoid running reports on individual chains if your goal is to pull entire categories. The API provides flexible filtering for any specific set of data. 
-- Any filter that can be applied to `api/Chains` is a valid collection filter, that can be applied to bulk exports (see Mixing filters section above).
+- Any filter that can be applied to `api/Chains` is a valid collection filter (`api/ChainLists/` `ChainsQuery` property), that can be applied to bulk exports (see Mixing filters section above).
 - If you want to request historical data, instead of iterating over historical updates, set "IncludePast" flag to true when generating a Locations report. You can then use the FirstAppeared and LastSeen columns to understand a brand's evolution over time.
-- For additional reporting background, data dictionaries and guides visit the [Support](https://location.chainxy.com/Support) page. If you have any questions, do not hesitate to reach out to support@chainxy.com
+- For additional reporting background, data dictionaries and guides visit the [Support](https://location.chainxy.com/Support) page. If you have any questions, do not hesitate to reach out to support@chainxy.com.
 
 ## Samples Provided
 
-1. [createCollectionAndDownload.py](python/createCollectionAndDownload.py) - Using a provided list of Chain Ids, this will create a collection with a specified name and download the most recent set of locations for that collection.
-    - input: list of Chain Ids, collection name
+1. [createCollectionAndDownload.py](python/createCollectionAndDownload.py) - Using a provided list of Chain Ids or a ChainsQuery, this will create a collection with a specified name and download the most recent set of locations for that collection.
+    - Input: list of Chain Ids or a `ChainsQuery` (see examples of filtering above), collection name, optional parameters for including sub-chains, distributors, coming soon and closed locations. See Collection's UI for a full reference of filters.
     - Output: ChainXY collection download (note that All Chain downloads are only available as csv files)
 2. [createCollectionDownload.py](python/createCollectionDownload.py) - Using a provided Collection Id and Collection Type, this will download that collection. If the optional cache_time is entered, it will check if a download that is not older than cache_time hours exists and will download that; otherwise, a new download will be generated.
     - Input: Collection Id, Collection Type, Cache Time (optional)
