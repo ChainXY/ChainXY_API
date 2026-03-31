@@ -10,6 +10,7 @@ All requests to ChainXY require an API token. You can generate a token on your u
 
 - Make sure to save the key as it is only displayed once and can not be retrieved
 - If you don’t have the API Tokens option in your user settings, please reach out to support@chainxy.com
+- Authenticate using `x-apikey` header
 
 ## Using the API
 
